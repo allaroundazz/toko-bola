@@ -47,6 +47,24 @@
 
 6. Menurut saya tutorial 0 dan 1 sangat membantu saya untuk dapat mulai memahami alur dasar dari penggunaan django, saya juga 
    penjelasan bertahap yang disajikan dengan pemberian tips juga menjadi insight yang cukup penting untuk saya kedepannta.
+
+
+
+
+1. Jelaskan mengapa kita memerlukan data delivery dalam pengimplementasian sebuah platform?
+   karena dalam platform, antara pengguna dan client membutuhkan cara untuk mengirim dan nerima data.
+
+2. Menurutmu, mana yang lebih baik antara XML dan JSON? Mengapa JSON lebih populer dibandingkan XML?
+   menurut saya JSON lebih baik karena lebih sederhana dan efisien
+
+3. Jelaskan fungsi dari method is_valid() pada form Django dan mengapa kita membutuhkan method tersebut?
+   untuk memastikan apakah data yang dikirim oleh user sudah sesuai agar data yang amsuk ke sistem sudah sesuai.
+
+   
+
+
+
+
    
 
    
