@@ -1,7 +1,7 @@
 from itertools import product
 from django.shortcuts import render, redirect, get_object_or_404
 from main.forms import TokoForm
-from main.models import Toko
+from main.models import Item
 from django.http import HttpResponse
 from django.core import serializers
 
@@ -27,7 +27,7 @@ def create_product(request):
     return render(request, "create_product.html", context)
 
 def show_product(request, id):
-    product = get_object_or_404(Toko, pk=id)
+    product = get_object_or_404(Item, pk=id)
     product.increment_views()
 
     context = {

@@ -27,9 +27,9 @@ class Item(models.Model):
 
     
     @property
-    def is_news_hot(self):
-        return self.news_views > 20
+    def is_item_hot(self):
+        return self.item_views > 20
         
     def increment_views(self):
-        self.news_views += 1
+        self.news_item += 1
         self.save()
