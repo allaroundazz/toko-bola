@@ -33,5 +33,5 @@ class Item(models.Model):
         return self.item_views > 20
         
     def increment_views(self):
-        self.news_item += 1
+        self.product_item += 1
         self.save()

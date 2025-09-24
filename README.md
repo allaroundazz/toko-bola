@@ -65,6 +65,27 @@
 
 
 
+
+
+Tugas 4
+
+1.  Menurut pemahaman saya, Django AuthenticationForm adalah form bawaan dari django untuk membuat interface login.
+   kelebihannya adalah sudah terintegrasi dengan sistem authentication django dan sudah ada validasi
+   secara otomatis jadi tidak perlu menulis validasi dari 0, namun menurut saya tampilannya kurang menarik
+
+2. Autentikasi berarti memverifikasi identitas user (seperti login) sedangkan otorisasi menentukan apa saja yang 
+   bisa dilakukan oleh user. Django melakukan autentikasi terlebih dahulu, setelah pass django melakukan otorisasi.
+
+3. Cookies bisa tetap tersimpan dan datanya bisa teatp ada walaupun browsernya sudah ditutup atau dibuka lagi, namun 
+   tidak direkomendasikan untuk menyimpan data dengan ukuran yang besar. Kelebihan dari session adalah keamanannya yang 
+   tinggi dikarenakan tidak bisa dimodifikasi user sehingga cocok untuk menyimpan data sensitif, namun menurut sumber yang
+   saya temukan di internet session memakan memory yang cukup tinggi.
+
+4. Django secara default sudah cukup aman, namun tetap ada risiko potensial yang perlu diwaspadai. 
+
+5. Implementasi dimulai dengan setup konfigurasi dasar di settings.py untuk mengaktifkan authentication apps dan middleware,     kemudian menjalankan migrasi database. Buat views untuk login/logout menggunakan AuthenticationForm dan decorator @login_required untuk proteksi views, serta template HTML yang include {% csrf_token %} dan conditional rendering berdasarkan status user.
+
+
    
 
    
