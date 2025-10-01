@@ -89,3 +89,16 @@ Tugas 4
    
 
    
+
+
+   TUGAS 5
+
+   1. Menurut pemahaman saya, prioritas selector CSS ditentukan oleh tingkat specificity-nya. Saya mengurutkan kekuatannya dari yang tertinggi yaitu inline style, diikuti oleh ID, class, hingga element selector sebagai aturan yang paling umum untuk diterapkan.
+
+   2. esponsive design adalah sebuah pendekatan fundamental yang krusial. Tujuannya adalah untuk memastikan sebuah website mampu memberikan pengalaman pengguna yang optimal dan konsisten di berbagai ukuran layar, mulai dari perangkat mobile hingga desktop.
+
+   3. Saya membedakan ketiga komponen box model ini berdasarkan lingkupnya terhadap elemen. Padding saya pahami sebagai ruang internal antara konten dan border, border sebagai bingkai elemen itu sendiri, dan margin sebagai ruang eksternal untuk menciptakan jarak dengan elemen lainnya.
+
+   4.  Flexbox saya gunakan untuk mengatur komponen dalam satu dimensi (sebaris atau sekolom), sedangkan grid saya terapkan untuk membangun struktur layout halaman yang kompleks dan bersifat dua dimensi.
+
+   5.  Pendekatan implementasi yang saya terapkan bersifat sistematis. Saya selalu mengawalinya dengan membangun struktur HTML yang semantik, dilanjutkan dengan styling dasar melalui pendekatan mobile-first, dan diakhiri dengan penyesuaian responsive untuk layar yang lebih besar menggunakan media queries.
