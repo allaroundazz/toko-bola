@@ -20,13 +20,13 @@ class Item(models.Model):
     is_featured = models.BooleanField(default=False)    
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     
+    
     # contoh atribut tambahan
     stock = models.PositiveIntegerField(default=0)      # stok item
     rating = models.FloatField(default=0.0)             # rating item
     
     def __str__(self):
         return self.name
-
     
     @property
     def is_item_hot(self):
@@ -35,3 +35,6 @@ class Item(models.Model):
     def increment_views(self):
         self.product_item += 1
         self.save()
+    
+
+    

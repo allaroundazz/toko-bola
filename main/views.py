@@ -17,18 +17,16 @@ from django.urls import reverse
 # 
 @login_required(login_url='/login')
 def show_main(request):
-    filter_type = request.GET.get("filter", "all")  # default 'all'
+    filter_type = request.GET.get('filter', "all") 
 
     if filter_type == "all":
-        product_list = product.objects.all()
+        product_list = Item.objects.all() 
     else:
-        product_list = product.objects.filter(user=request.user)
-
+        product_list = Item.objects.filter(user=request.user) 
     context = {
-        'aplikasi' : 'tokobola',
-        'nama': 'Diaz Prayodhi Iskandar',
+        'appname':'Takobala',
         'class': 'PBP D',
-        'product_list': product,
+        'product_list': product_list, 
         'last_login': request.COOKIES.get('last_login', 'Never')
     }
 
