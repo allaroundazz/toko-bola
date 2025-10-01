@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block meta %}
+<title>Hapus {{ product.name }} - TokoBola</title>
+{% endblock meta %}
+
+{% block content %}
+<div class="bg-gray-50 w-full min-h-screen py-8">
+    <div class="max-w-xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="bg-white rounded-lg border border-gray-200 p-6 sm:p-8 shadow-sm text-center">
+            <h1 class="text-2xl font-bold text-gray-900 mb-4">Konfirmasi Penghapusan</h1>
+            <p class="text-gray-600 mb-6">
+                Apakah Anda yakin ingin menghapus produk <strong class="text-gray-800">"{{ product.name }}"</strong>? Tindakan ini tidak dapat diurungkan.
+            </p>
+            
+            <form method="POST">
+                {% csrf_token %}
+                <div class="flex justify-center gap-4">
+                    <a href="{% url 'main:show_main' %}" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-md font-medium hover:bg-gray-50 transition-colors">
+                        Batal
+                    </a>
+                    <button type="submit" class="bg-red-600 text-white px-6 py-3 rounded-md font-medium hover:bg-red-700 transition-colors">
+                        Ya, Hapus Produk
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

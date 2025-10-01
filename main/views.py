@@ -14,6 +14,7 @@ import datetime
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 
+
 # 
 @login_required(login_url='/login')
 def show_main(request):
@@ -118,3 +119,30 @@ def logout_user(request):
     response = HttpResponseRedirect(reverse('main:login'))
     response.delete_cookie('last_login')
     return response
+
+def edit_product(request, id):
+    product = get_object_or_404(Item, pk=id) 
+    
+    if request.method == 'POST':
+        form = TokoForm(request.POST, request.FILES, instance=product)
+        if form.is_valid():
+            form.save()
+            return redirect('main:show_product', id=id)
+    else:
+        form = TokoForm(instance=product) 
+
+    context = {
+        'form': form,
+        'product': product
+    }
+    return render(request, 'main/edit_product.html', context)
+
+def delete_product(request, id):
+    product = get_object_or_404(Item, pk=id)
+    
+    if request.method == 'POST':
+        product.delete()
+        return redirect('main:show_main')
+
+    context = {'product': product}
+    return render(request, 'main/delete_product.html', context)
