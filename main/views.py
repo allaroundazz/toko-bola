@@ -13,6 +13,11 @@ from django.contrib.auth.decorators import login_required
 import datetime
 from django.http import HttpResponseRedirect
 from django.urls import reverse
+from django.http import JsonResponse
+from django.contrib.auth import authenticate, login
+from django.views.decorators.csrf import csrf_exempt
+import json
+from django.views.decorators.http import require_POST
 
 
 # 
@@ -146,3 +151,105 @@ def delete_product(request, id):
 
     context = {'product': product}
     return render(request, 'main/delete_product.html', context)
+
+@csrf_exempt 
+def login_ajax(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            username = data.get("username")
+            password = data.get("password")
+        except json.JSONDecodeError:
+            return JsonResponse({'status': 'error', 'message': 'Format data tidak valid'}, status=400)
+
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            login(request, user)
+            return JsonResponse({
+                "status": "success",
+                "message": "Login berhasil!",
+                "username": user.username
+            })
+        else:
+            return JsonResponse({
+                "status": "error",
+                "message": "Username atau password salah."
+            }, status=401)
+            
+    return JsonResponse({'status': 'error', 'message': 'Metode request tidak valid'}, status=405)
+
+
+@csrf_exempt
+def register_ajax(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({'status': 'error', 'message': 'Format data tidak valid'}, status=400)
+
+        form = UserCreationForm(data)
+        if form.is_valid():
+            form.save()
+            return JsonResponse({'status': 'success', 'message': 'Pendaftaran berhasil! Silakan login.'}, status=201)
+        else:
+            # Mengirimkan error form dalam format JSON
+            return JsonResponse({'status': 'error', 'errors': form.errors}, status=400)
+    
+    return JsonResponse({'status': 'error', 'message': 'Metode request tidak valid'}, status=405)
+
+@csrf_exempt
+@require_POST
+def create_product_ajax(request):
+    name = request.POST.get("name")
+    price = request.POST.get("price")
+    description = request.POST.get("description")
+    category = request.POST.get("category")
+    stock = request.POST.get("stock")
+    user = request.user
+
+    
+    new_item = Item(
+        name=name,
+        price=price,
+        description=description,
+        category=category,
+        stock=stock,
+        user=user
+    )
+    new_item.save()
+
+    # Mengembalikan respons sederhana
+    return HttpResponse("CREATED", status=201)
+
+@require_POST
+def delete_product(request, id):
+    try:
+        product = Item.objects.get(pk=id)
+        product.delete()
+        return JsonResponse({'status': 'success', 'message': 'Produk berhasil dihapus.'}, status=200)
+    except Item.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Produk tidak ditemukan.'}, status=404)
+    
+
+def get_product_by_id(request, id):
+    product = Item.objects.filter(pk=id)
+    return HttpResponse(serializers.serialize('json', product), content_type="application/json")
+
+
+@csrf_exempt
+@require_POST
+def edit_product_ajax(request, id):
+    try:
+        product = Item.objects.get(pk=id)
+    except Item.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Produk tidak ditemukan.'}, status=404)
+
+    form = TokoForm(request.POST, request.FILES, instance=product)
+    if form.is_valid():
+        updated_product = form.save()
+        # Mengembalikan data produk yang sudah diupdate
+        product_json = serializers.serialize('json', [updated_product])
+        return JsonResponse({'status': 'success', 'product': product_json})
+    else:
+        return JsonResponse({'status': 'error', 'errors': form.errors}, status=400)

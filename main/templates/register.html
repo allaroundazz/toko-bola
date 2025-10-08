@@ -9,61 +9,90 @@
   <div class="min-h-screen bg-gray-50 flex items-center justify-center p-4 sm:p-8">
     <div class="max-w-md w-full">
       <div class="bg-white border border-gray-200 rounded-lg p-6 sm:p-8 shadow-md">
-      <div class="text-center mb-8">
-        <h2 class="text-2xl font-semibold text-gray-900 mb-2">Buat Akun Baru</h2>
-        <p class="text-gray-500">Bergabunglah bersama TokoBola</p>
-      </div>
+        <div class="text-center mb-8">
+          <h2 class="text-2xl font-semibold text-gray-900 mb-2">Buat Akun Baru</h2>
+          <p class="text-gray-500">Bergabunglah bersama TokoBola</p>
+        </div>
 
-      <!-- Menampilkan Form Errors -->
-      {% if form.non_field_errors or form.errors %}
-        <div class="mb-6 space-y-2">
-          {% for error in form.non_field_errors %}
-            <div class="px-4 py-3 rounded text-sm border bg-red-50 border-red-200 text-red-700">
-              {{ error }}
+        <div id="error-messages" class="mb-6 space-y-2"></div>
+
+        <form id="register-form" method="POST" class="space-y-5">
+            {% csrf_token %}
+            <div>
+                <label for="id_username" class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+                <input id="id_username" name="username" type="text" required placeholder="Masukkan username">
             </div>
-          {% endfor %}
-          {% for field, errors in form.errors.items %}
-            {% for error in errors %}
-              <div class="px-4 py-3 rounded text-sm border bg-red-50 border-red-200 text-red-700">
-                <strong>{{ field|title }}:</strong> {{ error }}
-              </div>
-            {% endfor %}
-          {% endfor %}
+            <div>
+                <label for="id_password1" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                <input id="id_password1" name="password" type="password" required placeholder="Buat password">
+            </div>
+            <div>
+                <label for="id_password2" class="block text-sm font-medium text-gray-700 mb-2">Konfirmasi Password</label>
+                <input id="id_password2" name="password_confirmation" type="password" required placeholder="Konfirmasi password Anda">
+            </div>
+
+            <button type="submit" class="w-full bg-blue-600 text-white font-medium py-3 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200">
+              Buat Akun
+            </button>
+        </form>
+
+        <div class="mt-6 text-center pt-6 border-t border-gray-200">
+          <p class="text-gray-500 text-sm">
+            Sudah punya akun?  
+            <a href="{% url 'main:login' %}" class="text-blue-600 hover:text-blue-700 font-medium">
+              Sign In
+            </a>
+          </p>
         </div>
-      {% endif %}
-
-      <form method="POST" action="{% url 'main:register' %}" class="space-y-5">
-        {% csrf_token %}
-        
-        {% for field in form %}
-        <div>
-            <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">{{ field.label }}</label>
-            <input  
-              id="{{ field.id_for_label }}"  
-              name="{{ field.name }}"  
-              type="{{ field.field.widget.input_type }}"  
-              required  
-              placeholder="Masukkan {{ field.label|lower }}">
-        </div>
-        {% endfor %}
-
-        <button  
-          type="submit"  
-          class="w-full bg-blue-600 text-white font-medium py-3 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200">
-          Buat Akun
-        </button>
-      </form>
-
-      <div class="mt-6 text-center pt-6 border-t border-gray-200">
-        <p class="text-gray-500 text-sm">
-          Sudah punya akun?  
-          <a href="{% url 'main:login' %}" class="text-blue-600 hover:text-blue-700 font-medium">
-            Sign In
-          </a>
-        </p>
-      </div>
       </div>
     </div>
   </div>
 </div>
+
+<script>
+document.getElementById('register-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const username = document.getElementById('id_username').value;
+    const password = document.getElementById('id_password1').value;
+    const password2 = document.getElementById('id_password2').value;
+    const errorDiv = document.getElementById('error-messages');
+    errorDiv.innerHTML = '';
+
+    try {
+        const response = await fetch("{% url 'main:register_ajax' %}", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                username: username,
+                password1: password,
+                password2: password2,
+            }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            alert(data.message);
+            window.location.href = "{% url 'main:login' %}";
+        } else {
+            const errors = data.errors;
+            for (const field in errors) {
+                errors[field].forEach(error => {
+                    const errorElement = document.createElement('div');
+                    errorElement.className = 'px-4 py-3 rounded text-sm border bg-red-50 border-red-200 text-red-700';
+                    errorElement.textContent = `${field.replace("__all__", "Error").replace("password2", "Konfirmasi Password")}: ${error}`;
+                    errorDiv.appendChild(errorElement);
+                });
+            }
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        const errorElement = document.createElement('div');
+        errorElement.className = 'px-4 py-3 rounded text-sm border bg-red-50 border-red-200 text-red-700';
+        errorElement.textContent = 'Terjadi kesalahan. Silakan coba lagi.';
+        errorDiv.appendChild(errorElement);
+    }
+});
+</script>
 {% endblock content %}

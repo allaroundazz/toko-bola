@@ -2,31 +2,181 @@
 {% block title %}Home - TokoBola{% endblock title %}
 
 {% block content %}
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 bg-white p-4 rounded-lg shadow">
+{% csrf_token %} <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 bg-white p-4 rounded-lg shadow">
     <div class="mb-4 sm:mb-0">
         <h5 class="text-xl font-semibold">Selamat Datang, {{ name }}!</h5>
         <p class="text-sm text-gray-500">NPM: {{ npm }} | Kelas: {{ class }}</p>
         <p class="text-sm text-gray-500">Login terakhir: {{ last_login }}</p>
     </div>
     <div class="flex space-x-2">
-        <a href="{% url 'main:create_product' %}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300 text-center">
+        <button id="addProductBtn" type="button" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300 text-center">
             + Add Product
-        </a>
+        </button>
     </div>
 </div>
 
 <hr class="my-6">
 
-{% if not product_list %}
-<div class="text-center p-12 bg-white rounded-lg shadow">
-    <p class="text-gray-600 text-lg">Belum ada produk pada TokoBola.</p>
-</div>
-{% else %}
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    {% for product in product_list %}
-        {% include 'card.html' with product=product %}
-    {% endfor %}
-</div>
-{% endif %}
+<div id="product_grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    </div>
 
-{% endblock %}
+<script>
+    const modal = document.getElementById('productModal');
+    const productForm = document.getElementById('productForm');
+    const addProductBtn = document.getElementById('addProductBtn');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const productGrid = document.getElementById('product_grid');
+    const loadingState = document.getElementById('loadingState');
+    const errorState = document.getElementById('errorState');
+    
+    function showProductState(state) {
+        loadingState.classList.toggle('hidden', state !== 'loading');
+        errorState.classList.toggle('hidden', state !== 'error');
+        productGrid.classList.toggle('hidden', state !== 'ready' && state !== 'empty');
+        if (state === 'empty') {
+            productGrid.innerHTML = `<div class="col-span-3 text-center p-12 bg-white rounded-lg shadow"><p class="text-gray-600 text-lg">Belum ada produk.</p></div>`;
+        }
+    }
+
+    function showModal(mode, productId = null) {
+        productForm.reset();
+        
+        if (mode === 'create') {
+            document.getElementById('modalTitle').textContent = 'Tambah Produk Baru';
+            document.getElementById('modalDescription').textContent = 'Isi detail untuk menambahkan produk baru.';
+            document.getElementById('submitButton').textContent = 'Tambah Produk';
+            productForm.setAttribute('data-action', 'create');
+            productForm.removeAttribute('data-product-id');
+            modal.classList.remove('hidden');
+        } else if (mode === 'edit') {
+            document.getElementById('modalTitle').textContent = 'Edit Produk';
+            document.getElementById('modalDescription').textContent = 'Perbarui detail produk Anda.';
+            document.getElementById('submitButton').textContent = 'Update Produk';
+            productForm.setAttribute('data-action', 'edit');
+            productForm.setAttribute('data-product-id', productId);
+            
+            fetch(`/get-product-by-id/${productId}/`)
+                .then(res => res.json())
+                .then(data => {
+                    const fields = data[0].fields;
+                    document.getElementById('name').value = fields.name;
+                    document.getElementById('price').value = fields.price;
+                    document.getElementById('description').value = fields.description;
+                    document.getElementById('category').value = fields.category;
+                    document.getElementById('stock').value = fields.stock;
+                    modal.classList.remove('hidden');
+                });
+        }
+    }
+
+    function hideModal() {
+        modal.classList.add('hidden');
+    }
+
+    function renderCard(product) {
+        const fields = product.fields;
+        const pk = product.pk;
+        return `
+            <div class="product-card bg-white rounded-lg shadow-lg overflow-hidden flex flex-col border border-gray-200" data-product-id="${pk}">
+                <div class="p-4 flex flex-col flex-grow">
+                    <h2 class="text-xl font-bold mb-2"><a href="/product/${pk}/" class="text-gray-800 hover:text-blue-600">${fields.name}</a></h2>
+                    <div class="text-xs text-gray-600 mb-2"><span>Kategori: <strong>${fields.category}</strong></span> | <span>Stok: ${fields.stock}</span></div>
+                    <p class="text-gray-700 text-sm mb-4 flex-grow">${fields.description}</p>
+                    <div class="mt-4 pt-4 border-t border-gray-200 flex items-center justify-end space-x-3">
+                        <button class="edit-btn text-sm font-medium text-blue-600 hover:text-blue-800 px-4 py-1 rounded-md border border-blue-600 hover:bg-blue-50">Edit</button>
+                        <button class="delete-btn text-sm font-medium text-red-600 hover:text-red-800 px-4 py-1 rounded-md border border-red-600 hover:bg-red-50">Hapus</button>
+                    </div>
+                </div>
+            </div>`;
+    }
+    
+    async function getProducts() {
+        showProductState('loading');
+        try {
+            const response = await fetch("{% url 'main:show_json' %}");
+            if (!response.ok) throw new Error('Network response was not ok.');
+            
+            const products = await response.json();
+            productGrid.innerHTML = "";
+            
+            if (products.length > 0) {
+                products.forEach(product => productGrid.innerHTML += renderCard(product));
+                showProductState('ready');
+            } else {
+                showProductState('empty');
+            }
+        } catch (error) {
+            console.error('Fetch error:', error);
+            showProductState('error');
+        }
+    }
+
+    addProductBtn.addEventListener('click', () => showModal('create'));
+    refreshBtn.addEventListener('click', getProducts);
+
+    productForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const action = productForm.getAttribute('data-action');
+        const formData = new FormData(productForm);
+        let url = '';
+        
+        if (action === 'create') {
+            url = "{% url 'main:create_product_ajax' %}";
+        } else if (action === 'edit') {
+            const productId = productForm.getAttribute('data-product-id');
+            url = `/edit-product-ajax/${productId}/`;
+        }
+
+        try {
+            const response = await fetch(url, { method: 'POST', body: formData });
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                hideModal();
+                showToast(`Produk berhasil ${action === 'create' ? 'ditambahkan' : 'diperbarui'}.`, 'success');
+                if (action === 'create') {
+                    const newProductData = JSON.parse(data.product)[0];
+                    productGrid.insertAdjacentHTML('afterbegin', renderCard(newProductData));
+                } else if (action === 'edit') {
+                    const updatedProductData = JSON.parse(data.product)[0];
+                    const cardToUpdate = productGrid.querySelector(`[data-product-id="${updatedProductData.pk}"]`);
+                    if(cardToUpdate) cardToUpdate.outerHTML = renderCard(updatedProductData);
+                }
+            } else {
+                showToast('Gagal menyimpan produk: ' + JSON.stringify(data.errors), 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showToast('Terjadi kesalahan pada server.', 'error');
+        }
+    });
+
+    productGrid.addEventListener('click', async function(e) {
+        const target = e.target;
+
+        if (target.matches('.delete-btn')) {
+            const card = target.closest('.product-card');
+            const productId = card.dataset.productId;
+            if (confirm('Yakin ingin menghapus produk ini?')) {
+                const response = await fetch(`/delete-product/${productId}/`, {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value }
+                });
+                const data = await response.json();
+                if (data.status === 'success') {
+                    card.remove();
+                    showToast('Produk berhasil dihapus.', 'success');
+                } else {
+                    showToast('Gagal menghapus produk.', 'error');
+                }
+            }
+        } else if (target.matches('.edit-btn')) {
+            const card = target.closest('.product-card');
+            const productId = card.dataset.productId;
+            showModal('edit', productId);
+        }
+    });
+    
+    getProducts();
+</script>
+{% endblock content %}

@@ -13,65 +13,22 @@
         <p class="text-gray-600">Selamat datang kembali di TokoBola</p>
       </div>
 
-      {% if form.non_field_errors %}
-        <div class="mb-6">
-          {% for error in form.non_field_errors %}
-            <div class="px-4 py-3 rounded-md text-sm border bg-red-50 border-red-200 text-red-700">
-              {{ error }}
-            </div>
-          {% endfor %}
-        </div>
-      {% endif %}
+      <div id="error-message" class="hidden mb-6 px-4 py-3 rounded text-sm border bg-red-50 border-red-200 text-red-700"></div>
 
-      <form method="POST" action="{% url 'main:login' %}" class="space-y-6">
+      <form id="login-form" method="POST" class="space-y-6">
         {% csrf_token %}
-        
         <div>
-          <label for="{{ form.username.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">Username</label>
-          <input  
-            id="{{ form.username.id_for_label }}"  
-            name="{{ form.username.name }}"  
-            type="text"  
-            required  
-            placeholder="Masukkan username Anda">
+          <label for="username" class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+          <input id="username" name="username" type="text" required placeholder="Masukkan username Anda">
         </div>
-
         <div>
-          <label for="{{ form.password.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
-          <input  
-            id="{{ form.password.id_for_label }}"  
-            name="{{ form.password.name }}"  
-            type="password"  
-            required  
-            placeholder="Masukkan password Anda">
+          <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+          <input id="password" name="password" type="password" required placeholder="Masukkan password Anda">
         </div>
-
-        <button  
-          type="submit"  
-          class="w-full bg-blue-600 text-white font-medium py-3 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+        <button type="submit" class="w-full bg-blue-600 text-white font-medium py-3 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
           Sign In
         </button>
       </form>
-
-      {% if messages %}
-        <div class="mt-6 space-y-3">
-          {% for message in messages %}
-            <div  
-              class="
-                px-4 py-3 rounded-md text-sm border
-                {% if message.tags == 'success' %}
-                  bg-green-50 border-green-200 text-green-700
-                {% elif message.tags == 'error' %}
-                  bg-red-50 border-red-200 text-red-700
-                {% else %}
-                  bg-gray-50 border-gray-200 text-gray-700
-                {% endif %}
-              ">
-              {{ message }}
-            </div>
-          {% endfor %}
-        </div>
-      {% endif %}
 
       <div class="mt-6 text-center pt-6 border-t border-gray-200">
         <p class="text-gray-500 text-sm">
@@ -84,4 +41,43 @@
     </div>
   </div>
 </div>
+
+<script>
+document.getElementById('login-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    const errorDiv = document.getElementById('error-message');
+
+    try {
+        const response = await fetch("{% url 'main:login_ajax' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                username: username,
+                password: password,
+            }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            // Jika login sukses
+            alert(`Selamat datang, ${data.username}!`);
+            window.location.href = "{% url 'main:show_main' %}"; // Arahkan ke halaman utama
+        } else {
+            // Jika login gagal
+            errorDiv.textContent = data.message;
+            errorDiv.classList.remove('hidden');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        errorDiv.textContent = 'Terjadi kesalahan saat mencoba login.';
+        errorDiv.classList.remove('hidden');
+    }
+});
+</script>
 {% endblock content %}

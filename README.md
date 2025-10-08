@@ -102,3 +102,41 @@ Tugas 4
    4.  Flexbox saya gunakan untuk mengatur komponen dalam satu dimensi (sebaris atau sekolom), sedangkan grid saya terapkan untuk membangun struktur layout halaman yang kompleks dan bersifat dua dimensi.
 
    5.  Pendekatan implementasi yang saya terapkan bersifat sistematis. Saya selalu mengawalinya dengan membangun struktur HTML yang semantik, dilanjutkan dengan styling dasar melalui pendekatan mobile-first, dan diakhiri dengan penyesuaian responsive untuk layar yang lebih besar menggunakan media queries.
+
+
+   TUGAS 6
+
+   1. Synchronous Request (Sinkron) bekerja seperti panggilan telepon. Saat browser mengirim permintaan ke server, ia harus menunggu sampai server memberikan jawaban penuh sebelum bisa melakukan hal lain. Selama menunggu, halaman akan "terkunci" atau tidak responsif. Inilah yang menyebabkan halaman me-reload seluruhnya saat Anda menekan sebuah tombol atau tautan.
+
+   Asynchronous Request (Asinkron) bekerja seperti mengirim pesan chat. Browser mengirim permintaan di latar belakang, dan pengguna tetap bisa berinteraksi dengan halaman (menggulir, mengetik, dll.) tanpa harus menunggu. Saat server selesai memproses dan mengirim balasan, JavaScript akan menangani data tersebut dan memperbarui hanya bagian halaman yang relevan.
+
+   2. Aksi Pengguna: Pengguna memicu sebuah event, misalnya mengklik tombol "Simpan".
+
+   JavaScript Mengintersep: Event listener pada JavaScript mencegah aksi bawaan browser (seperti mengirimkan form dan me-reload halaman).
+
+   Fetch Request: JavaScript mengumpulkan data yang dibutuhkan dan mengirimkannya ke sebuah URL spesifik di Django menggunakan fetch di latar belakang.
+
+   View Django Memproses: View di Django yang terhubung dengan URL tersebut menerima data, memprosesnya (misalnya, menyimpan data ke database), dan menyiapkan respons.
+
+   JsonResponse Dikirim: Alih-alih me-render template HTML, view tersebut mengembalikan JsonResponse yang hanya berisi data yang relevan (misalnya, status sukses atau pesan error).
+
+   Pembaruan DOM: JavaScript di browser menerima JsonResponse, membacanya, dan secara dinamis memanipulasi atau memperbarui elemen HTML di halaman (seperti menambahkan kartu baru atau menampilkan pesan error) tanpa refresh.
+
+   3. Pengalaman Pengguna (UX) Lebih Baik: Aplikasi terasa jauh lebih cepat dan responsif karena tidak ada full-page reload yang mengganggu. Interaksi terasa instan dan mulus, mirip aplikasi desktop.
+
+   Efisiensi: Mengurangi beban kerja server dan penggunaan bandwidth karena server hanya mengirimkan data kecil dalam format JSON, bukan seluruh halaman HTML beserta asetnya.
+
+   Interaktivitas Tinggi: Memungkinkan pembuatan fitur yang dinamis, seperti notifikasi real-time, auto-saving, dan pembaruan konten tanpa mengganggu aktivitas pengguna.
+
+
+   4. roteksi CSRF (Cross-Site Request Forgery): Ini adalah yang terpenting. Setiap request POST dari AJAX harus menyertakan CSRF token. JavaScript mengambil token ini dari halaman dan mengirimkannya sebagai header (X-CSRFToken) pada fetch request.
+
+   Gunakan HTTPS: Semua komunikasi yang mengirimkan data sensitif seperti password wajib dienkripsi menggunakan HTTPS.
+
+   Validasi di Sisi Server: Jangan pernah mempercayai data yang dikirim dari frontend. View Django harus selalu melakukan validasi ulang semua data (misalnya, menggunakan AuthenticationForm atau UserCreationForm) sebelum menyimpannya ke database.
+
+   5. Membuat Aplikasi Terasa Cepat: Meskipun ada jeda saat mengambil data, antarmuka pengguna tetap responsif. Menampilkan indikator loading membuat pengguna tahu sistem sedang bekerja, dan penantian terasa lebih singkat daripada melihat layar putih saat reload.
+
+   Menjaga Konteks Pengguna: Karena halaman tidak pernah me-reload, pengguna tidak kehilangan posisi atau konteks mereka. Misalnya, setelah menambahkan produk dari modal, mereka tetap berada di halaman utama dan bisa langsung melanjutkan aktivitasnya.
+
+   Memberikan Umpan Balik Instan: Aksi pengguna mendapatkan respons visual langsung. Saat item dihapus, item tersebut langsung hilang. Saat item disimpan, notifikasi toast muncul. Ini memberikan kepastian kepada pengguna bahwa aksi mereka berhasil.
